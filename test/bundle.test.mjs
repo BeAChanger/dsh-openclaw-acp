@@ -23,5 +23,6 @@ test('declares a DSH bundle that mounts this package', async () => {
   assert.match(patch, /deepseek-v4-flash/)
   assert.match(patch, /reasoningEffort: max/)
   assert.match(patch, /defaultContextWindow: 1000000/)
+  assert.match(patch, /maxTokens: 384000/)
   assert.ok(root.endsWith('dsh-openclaw-acp\\') || root.endsWith('dsh-openclaw-acp/'))
 })

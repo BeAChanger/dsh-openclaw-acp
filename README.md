@@ -24,11 +24,11 @@ This package does not embed a WeChat SDK and does not duplicate Harness. It inst
 
 ```bash
 npm install -g @deepseek-ai/dsh@0.1.0-rc.6
-dsh plugin --profile openclaw add github:BeAChanger/dsh-openclaw-acp#v0.1.1
+dsh plugin --profile openclaw add github:BeAChanger/dsh-openclaw-acp#v0.1.2
 dsh --profile openclaw --dump-config
 ```
 
-The default route is `deepseek-official/deepseek-v4-flash`, with thinking enabled, `max` reasoning effort, a 1,000,000-token context window, and a 256,000-token output cap. Override the model in the Gateway environment when needed:
+The default route is `deepseek-official/deepseek-v4-flash`, with thinking enabled, `max` reasoning effort, a 1,000,000-token context window, and a 384,000-token output cap. Override the model in the Gateway environment when needed:
 
 ```bash
 export DSH_OPENCLAW_PROVIDER=deepseek-official
