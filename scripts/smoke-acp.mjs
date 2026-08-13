@@ -1,0 +1,129 @@
+import assert from 'node:assert/strict'
+import { spawn, spawnSync } from 'node:child_process'
+import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { dirname, isAbsolute, join } from 'node:path'
+import { Readable, Writable } from 'node:stream'
+import { fileURLToPath } from 'node:url'
+import {
+  ClientSideConnection,
+  ndJsonStream,
+  PROTOCOL_VERSION,
+} from '@agentclientprotocol/sdk'
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)))
+const dshBin = fileURLToPath(new URL('../node_modules/@deepseek-ai/dsh/lib/bin.js', import.meta.url))
+const sandbox = await mkdtemp(join(tmpdir(), 'dsh-openclaw-acp-'))
+const dshHome = join(sandbox, 'home')
+const workspace = join(sandbox, 'workspace')
+const packageManager = process.platform === 'win32'
+  ? {
+      command: process.execPath,
+      args: [join(dirname(process.execPath), 'node_modules', 'corepack', 'dist', 'pnpm.js')],
+    }
+  : { command: 'pnpm', args: [] }
+
+const env = {
+  ...process.env,
+  DSH_HOME: dshHome,
+  DSH_PERMISSION_MODE: 'danger-full-access',
+  DSH_TELEMETRY_DISABLED: '1',
+  // The DeepSeek adapter validates presence during boot. No model call occurs.
+  DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY ?? 'sk-dummy-for-protocol-smoke',
+}
+
+let child
+try {
+  await mkdir(workspace, { recursive: true })
+  // Install the packed artifact rather than a workspace link. This catches
+  // missing files, manifest dependencies, and peer resolution exactly where a
+  // GitHub release or npm consumer would encounter them.
+  const pack = spawnSync(
+    packageManager.command,
+    [...packageManager.args, 'pack', '--pack-destination', sandbox],
+    { cwd: root, env, encoding: 'utf8' },
+  )
+  assert.equal(
+    pack.status,
+    0,
+    `package creation failed: ${pack.error ?? ''}\nstdout:\n${pack.stdout}\nstderr:\n${pack.stderr}`,
+  )
+  const tarballName = pack.stdout.trim().split(/\r?\n/).at(-1)
+  assert.ok(tarballName?.endsWith('.tgz'), `unexpected pack output: ${pack.stdout}`)
+  const tarball = isAbsolute(tarballName) ? tarballName : join(sandbox, tarballName)
+
+  const install = spawnSync(
+    process.execPath,
+    [dshBin, 'plugin', '--profile', 'openclaw', 'add', tarball],
+    { cwd: root, env, encoding: 'utf8' },
+  )
+  assert.equal(
+    install.status,
+    0,
+    `profile install failed\nstdout:\n${install.stdout}\nstderr:\n${install.stderr}`,
+  )
+
+  const dump = spawnSync(
+    process.execPath,
+    [dshBin, '--profile', 'openclaw', '--dump-config'],
+    { cwd: workspace, env, encoding: 'utf8' },
+  )
+  assert.equal(
+    dump.status,
+    0,
+    `config dump failed\nstdout:\n${dump.stdout}\nstderr:\n${dump.stderr}`,
+  )
+  assert.match(dump.stdout, /dsh-openclaw-acp/)
+  assert.match(dump.stdout, /id: openclaw-acp/)
+
+  child = spawn(process.execPath, [dshBin, '--profile', 'openclaw'], {
+    cwd: workspace,
+    env,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  })
+
+  const stderr = []
+  child.stderr.setEncoding('utf8')
+  child.stderr.on('data', chunk => stderr.push(chunk))
+
+  const stdout = []
+  const passthrough = new Readable({ read() {} })
+  child.stdout.on('data', chunk => {
+    stdout.push(chunk)
+    passthrough.push(chunk)
+  })
+  child.stdout.on('end', () => passthrough.push(null))
+
+  const stream = ndJsonStream(
+    Writable.toWeb(child.stdin),
+    Readable.toWeb(passthrough),
+  )
+  const client = new ClientSideConnection(() => ({
+    sessionUpdate: () => Promise.resolve(),
+    requestPermission: () => Promise.resolve({ outcome: { outcome: 'cancelled' } }),
+  }), stream)
+
+  await client.initialize({ protocolVersion: PROTOCOL_VERSION, clientCapabilities: {} })
+  const session = await client.newSession({ cwd: workspace, mcpServers: [] })
+  assert.equal(typeof session.sessionId, 'string')
+  assert.ok(session.sessionId.length > 0)
+
+  const frames = Buffer.concat(stdout).toString('utf8').split('\n').filter(Boolean)
+  assert.ok(frames.length >= 2)
+  for (const frame of frames) assert.doesNotThrow(() => JSON.parse(frame))
+
+  console.log(`ACP_SMOKE_OK session=${session.sessionId} frames=${frames.length}`)
+  child.kill('SIGTERM')
+  await Promise.race([
+    new Promise(resolve => child.once('close', resolve)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('ACP process did not exit after SIGTERM')), 10_000)),
+  ])
+
+  assert.ok(
+    child.exitCode === 0 || child.signalCode === 'SIGTERM',
+    `ACP process failed\n${stderr.join('')}`,
+  )
+} finally {
+  if (child && child.exitCode === null) child.kill('SIGTERM')
+  await rm(sandbox, { recursive: true, force: true })
+}

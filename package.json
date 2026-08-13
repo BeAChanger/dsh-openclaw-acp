@@ -1,0 +1,56 @@
+{
+  "name": "dsh-openclaw-acp",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness bundle that exposes a profile as an OpenClaw-compatible ACP agent.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "test:acp": "node ./scripts/smoke-acp.mjs",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "openclaw",
+    "wechat",
+    "agent-client-protocol",
+    "acp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BeAChanger/dsh-openclaw-acp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BeAChanger/dsh-openclaw-acp/issues"
+  },
+  "homepage": "https://github.com/BeAChanger/dsh-openclaw-acp#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-acp": "0.1.0-rc.6",
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "devDependencies": {
+    "@agentclientprotocol/sdk": "0.25.1",
+    "@deepseek-ai/dsh": "0.1.0-rc.6"
+  }
+}

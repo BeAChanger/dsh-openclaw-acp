@@ -1,0 +1,11 @@
+# DeepSeek Harness bundle layer for OpenClaw ACPX.
+# stdout must remain reserved for ACP JSON-RPC frames.
+- id: hmr
+  disabled: true
+
+- insert:
+    - id: openclaw-acp
+      name: dsh-openclaw-acp
+      config:
+        provider: !!js process.env.DSH_OPENCLAW_PROVIDER ?? 'deepseek-official'
+        model: !!js process.env.DSH_OPENCLAW_MODEL ?? 'deepseek-v4-flash'
