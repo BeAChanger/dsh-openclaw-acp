@@ -75,6 +75,8 @@ try {
   )
   assert.match(dump.stdout, /dsh-openclaw-acp/)
   assert.match(dump.stdout, /id: openclaw-acp/)
+  assert.match(dump.stdout, /reasoningEffort: max/)
+  assert.match(dump.stdout, /defaultContextWindow: 1000000/)
 
   child = spawn(process.execPath, [dshBin, '--profile', 'openclaw'], {
     cwd: workspace,

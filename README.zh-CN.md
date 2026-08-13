@@ -24,11 +24,11 @@
 
 ```bash
 npm install -g @deepseek-ai/dsh@0.1.0-rc.6
-dsh plugin --profile openclaw add github:BeAChanger/dsh-openclaw-acp#v0.1.0
+dsh plugin --profile openclaw add github:BeAChanger/dsh-openclaw-acp#v0.1.1
 dsh --profile openclaw --dump-config
 ```
 
-默认路由是 `deepseek-official/deepseek-v4-flash`。如需覆盖，在 Gateway 环境中设置：
+默认路由是 `deepseek-official/deepseek-v4-flash`，启用 thinking，推理强度为 `max`，上下文窗口为 1,000,000 token，输出上限为 256,000 token。如需覆盖模型，在 Gateway 环境中设置：
 
 ```bash
 export DSH_OPENCLAW_PROVIDER=deepseek-official

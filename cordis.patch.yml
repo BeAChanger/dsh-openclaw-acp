@@ -3,6 +3,13 @@
 - id: hmr
   disabled: true
 
+- id: llm-deepseek
+  config:
+    thinking: enabled
+    reasoningEffort: max
+    maxTokens: 256000
+    defaultContextWindow: 1000000
+
 - insert:
     - id: openclaw-acp
       name: dsh-openclaw-acp
