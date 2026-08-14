@@ -14,9 +14,9 @@
 
 ## 前置条件
 
-- Node.js 22 或更高版本
+- pnpm 10，以及 OpenClaw 支持的 Node.js 版本；稳定版 OpenClaw `2026.7.1-2` 要求 Node.js 22.22.3+、24.15.0+ 或 25.9.0+
 - DeepSeek Harness `0.1.0-rc.6`
-- 已安装官方 `@openclaw/acpx` 插件的 OpenClaw
+- OpenClaw `2026.7.1-2` 或更高版本，并已安装官方 `@openclaw/acpx` 插件
 - OpenClaw Gateway 进程可以读取 `DEEPSEEK_API_KEY`
 - 已配置一个 OpenClaw 渠道，例如腾讯 `@tencent-weixin/openclaw-weixin`
 
@@ -40,7 +40,7 @@ export DSH_OPENCLAW_MODEL=deepseek-v4-pro
 安装并启用 OpenClaw 官方 ACP runtime：
 
 ```bash
-openclaw plugins install @openclaw/acpx
+openclaw plugins install @openclaw/acpx@2026.7.1
 openclaw config set plugins.entries.acpx.enabled true
 ```
 

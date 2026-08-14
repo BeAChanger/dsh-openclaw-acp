@@ -14,9 +14,9 @@ This package does not embed a WeChat SDK and does not duplicate Harness. It inst
 
 ## Prerequisites
 
-- Node.js 22 or newer
+- pnpm 10 and a Node.js release supported by OpenClaw; stable OpenClaw `2026.7.1-2` requires Node.js 22.22.3+, 24.15.0+, or 25.9.0+
 - DeepSeek Harness `0.1.0-rc.6`
-- OpenClaw with the official `@openclaw/acpx` plugin
+- OpenClaw `2026.7.1-2` or newer with the official `@openclaw/acpx` plugin
 - `DEEPSEEK_API_KEY` available to the OpenClaw Gateway process
 - A configured OpenClaw channel, such as Tencent's `@tencent-weixin/openclaw-weixin`
 
@@ -40,7 +40,7 @@ export DSH_OPENCLAW_MODEL=deepseek-v4-pro
 Install and enable OpenClaw's official ACP runtime:
 
 ```bash
-openclaw plugins install @openclaw/acpx
+openclaw plugins install @openclaw/acpx@2026.7.1
 openclaw config set plugins.entries.acpx.enabled true
 ```
 
