@@ -46,6 +46,14 @@ openclaw plugins install @openclaw/acpx@2026.7.1
 openclaw config set plugins.entries.acpx.enabled true
 ```
 
+如需接入微信，安装本组合已验证的腾讯渠道版本。最后一条命令会显示二维码，必须由运营方扫码授权：
+
+```bash
+openclaw plugins install @tencent-weixin/openclaw-weixin@2.4.6
+openclaw config set plugins.entries.openclaw-weixin.enabled true
+openclaw channels login --channel openclaw-weixin
+```
+
 把以下内容加入 OpenClaw 配置：
 
 ```json5
@@ -68,6 +76,9 @@ openclaw config set plugins.entries.acpx.enabled true
             }
           }
         }
+      },
+      "openclaw-weixin": {
+        enabled: true
       }
     }
   }
@@ -89,6 +100,12 @@ openclaw config set plugins.entries.acpx.enabled true
 
 ```text
 微信 -> OpenClaw 渠道 -> ACPX -> dsh --profile openclaw -> DeepSeek Harness
+```
+
+多个微信号同时登录时，建议按账号、渠道和发送者隔离私聊会话：
+
+```bash
+openclaw config set session.dmScope per-account-channel-peer
 ```
 
 微信 token 和用户标识不会跨过 ACP 边界。OpenClaw 负责解析渠道发送者与会话；Harness 只接收指定工作区和提示词内容。

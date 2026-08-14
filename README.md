@@ -46,6 +46,14 @@ openclaw plugins install @openclaw/acpx@2026.7.1
 openclaw config set plugins.entries.acpx.enabled true
 ```
 
+For WeChat, install the Tencent channel version verified with this stack. The final login command displays a QR code and must be completed by the operator:
+
+```bash
+openclaw plugins install @tencent-weixin/openclaw-weixin@2.4.6
+openclaw config set plugins.entries.openclaw-weixin.enabled true
+openclaw channels login --channel openclaw-weixin
+```
+
 Add this configuration to the OpenClaw config:
 
 ```json5
@@ -68,6 +76,9 @@ Add this configuration to the OpenClaw config:
             }
           }
         }
+      },
+      "openclaw-weixin": {
+        enabled: true
       }
     }
   }
@@ -89,6 +100,12 @@ Once a WeChat channel is connected to the same Gateway, the message path is:
 
 ```text
 WeChat -> OpenClaw channel -> ACPX -> dsh --profile openclaw -> DeepSeek Harness
+```
+
+For multiple logged-in WeChat accounts, isolate direct-message sessions by account, channel, and sender:
+
+```bash
+openclaw config set session.dmScope per-account-channel-peer
 ```
 
 No WeChat token or user identifier crosses the ACP boundary. OpenClaw resolves the channel sender and session; Harness receives only the selected workspace and prompt content.
