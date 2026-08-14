@@ -24,11 +24,11 @@
 
 ```bash
 npm install -g @deepseek-ai/dsh@0.1.0-rc.6
-dsh plugin --profile openclaw add https://github.com/BeAChanger/dsh-openclaw-acp/releases/download/v0.1.2/dsh-openclaw-acp-0.1.2.tgz
+dsh plugin --profile openclaw add https://github.com/BeAChanger/dsh-openclaw-acp/releases/download/v0.1.3/dsh-openclaw-acp-0.1.3.tgz
 dsh --profile openclaw --dump-config
 ```
 
-该命令使用预构建的 release 产物（SHA-256：`c27d863f65d3ce4518e25cc6ef3758b66d956ea51ab11678e4c67d42803d7240`），安装时不会执行仓库构建脚本。
+该命令使用预构建的 release 产物，安装时不会执行仓库构建脚本。Release 页面同时发布 SHA-256 校验文件。
 
 默认路由是 `deepseek-official/deepseek-v4-flash`，启用 thinking，推理强度为 `max`，上下文窗口为 1,000,000 token，输出上限为 384,000 token。如需覆盖模型，在 Gateway 环境中设置：
 
@@ -117,7 +117,7 @@ npm run test:acp
 npm run pack:check
 ```
 
-`test:acp` 会把本组合包安装进隔离 profile，启动真实 `dsh` 进程，完成 ACP 协商、创建会话，并验证 stdout 只有 JSON-RPC 帧。它不调用模型，也不需要真实 API key。
+`test:acp` 会把本组合包安装进隔离 profile，并执行两段协议验证：先直接启动真实 `dsh`，验证 ACP 协商与纯 JSON-RPC stdout；再通过 OpenClaw 官方 ACPX 插件所使用的已发布 `acpx@0.11.2` runtime，以自定义 Agent 方式拉起该 profile。两段验证都会完成 `initialize` 和 `session/new`，不调用模型，也不需要真实 API key。
 
 ## 许可证
 

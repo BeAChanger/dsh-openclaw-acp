@@ -24,11 +24,11 @@ This package does not embed a WeChat SDK and does not duplicate Harness. It inst
 
 ```bash
 npm install -g @deepseek-ai/dsh@0.1.0-rc.6
-dsh plugin --profile openclaw add https://github.com/BeAChanger/dsh-openclaw-acp/releases/download/v0.1.2/dsh-openclaw-acp-0.1.2.tgz
+dsh plugin --profile openclaw add https://github.com/BeAChanger/dsh-openclaw-acp/releases/download/v0.1.3/dsh-openclaw-acp-0.1.3.tgz
 dsh --profile openclaw --dump-config
 ```
 
-The command uses the prebuilt release artifact (SHA-256 `c27d863f65d3ce4518e25cc6ef3758b66d956ea51ab11678e4c67d42803d7240`), so installation does not execute a repository build.
+The command uses the prebuilt release artifact, so installation does not execute a repository build. The release page publishes a SHA-256 checksum asset.
 
 The default route is `deepseek-official/deepseek-v4-flash`, with thinking enabled, `max` reasoning effort, a 1,000,000-token context window, and a 384,000-token output cap. Override the model in the Gateway environment when needed:
 
@@ -117,7 +117,7 @@ npm run test:acp
 npm run pack:check
 ```
 
-`test:acp` installs the bundle into an isolated profile, starts the real `dsh` process, negotiates ACP, creates a session, and verifies that stdout contains JSON-RPC frames only. It does not call a model and does not require a real API key.
+`test:acp` installs the bundle into an isolated profile and runs two protocol checks: a direct real-`dsh` ACP negotiation with JSON-RPC-only stdout, then a custom-agent launch through the published `acpx@0.11.2` runtime used by OpenClaw's official ACPX plugin. Both checks complete `initialize` and `session/new`. They do not call a model and do not require a real API key.
 
 ## License
 

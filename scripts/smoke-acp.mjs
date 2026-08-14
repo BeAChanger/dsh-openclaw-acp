@@ -10,6 +10,11 @@ import {
   ndJsonStream,
   PROTOCOL_VERSION,
 } from '@agentclientprotocol/sdk'
+import {
+  createAcpRuntime,
+  createAgentRegistry,
+  createRuntimeStore,
+} from 'acpx/runtime'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const dshBin = fileURLToPath(new URL('../node_modules/@deepseek-ai/dsh/lib/bin.js', import.meta.url))
@@ -33,6 +38,8 @@ const env = {
 }
 
 let child
+let acpxRuntime
+let acpxHandle
 try {
   await mkdir(workspace, { recursive: true })
   // Install the packed artifact rather than a workspace link. This catches
@@ -115,7 +122,6 @@ try {
   assert.ok(frames.length >= 2)
   for (const frame of frames) assert.doesNotThrow(() => JSON.parse(frame))
 
-  console.log(`ACP_SMOKE_OK session=${session.sessionId} frames=${frames.length}`)
   child.kill('SIGTERM')
   await Promise.race([
     new Promise(resolve => child.once('close', resolve)),
@@ -126,7 +132,54 @@ try {
     child.exitCode === 0 || child.signalCode === 'SIGTERM',
     `ACP process failed\n${stderr.join('')}`,
   )
+
+  // Exercise the same published ACPX runtime used by OpenClaw's official
+  // @openclaw/acpx plugin. This proves that a custom agent registration can
+  // spawn the installed Harness profile and complete ACP initialize plus
+  // session/new without relying on acpx CLI's built-in Codex session label.
+  Object.assign(process.env, {
+    DSH_HOME: dshHome,
+    DSH_PERMISSION_MODE: env.DSH_PERMISSION_MODE,
+    DSH_TELEMETRY_DISABLED: env.DSH_TELEMETRY_DISABLED,
+    DEEPSEEK_API_KEY: env.DEEPSEEK_API_KEY,
+  })
+  const acpxState = join(sandbox, 'acpx-state')
+  const acpxStore = createRuntimeStore({ stateDir: acpxState })
+  const commandNode = process.execPath.replaceAll('\\', '/')
+  const commandDsh = dshBin.replaceAll('\\', '/')
+  const dshCommand = `"${commandNode}" "${commandDsh}" --profile openclaw`
+  acpxRuntime = createAcpRuntime({
+    cwd: workspace,
+    sessionStore: acpxStore,
+    agentRegistry: createAgentRegistry({
+      overrides: { 'deepseek-harness': dshCommand },
+    }),
+    permissionMode: 'deny-all',
+    nonInteractivePermissions: 'deny',
+    timeoutMs: 30_000,
+  })
+  acpxHandle = await acpxRuntime.ensureSession({
+    sessionKey: 'agent:deepseek-harness:acp:smoke',
+    agent: 'deepseek-harness',
+    mode: 'oneshot',
+    cwd: workspace,
+  })
+  assert.equal(acpxHandle.backend, 'acpx')
+  assert.ok(acpxHandle.acpxRecordId)
+  assert.ok(acpxHandle.backendSessionId)
+  const acpxRecord = await acpxStore.load(acpxHandle.acpxRecordId)
+  assert.equal(acpxRecord?.agentCommand, dshCommand)
+
+  console.log(`ACP_SMOKE_OK session=${session.sessionId} frames=${frames.length}`)
+  console.log(`ACPX_DSH_SMOKE_OK record=${acpxHandle.acpxRecordId} session=${acpxHandle.backendSessionId}`)
 } finally {
+  if (acpxRuntime && acpxHandle) {
+    await acpxRuntime.close({
+      handle: acpxHandle,
+      reason: 'smoke complete',
+      discardPersistentState: true,
+    }).catch(() => {})
+  }
   if (child && child.exitCode === null) child.kill('SIGTERM')
   await rm(sandbox, { recursive: true, force: true })
 }

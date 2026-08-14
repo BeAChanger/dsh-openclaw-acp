@@ -1,6 +1,6 @@
 {
   "name": "dsh-openclaw-acp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "DeepSeek Harness bundle that exposes a profile as an OpenClaw-compatible ACP agent.",
   "type": "module",
   "main": "./index.js",
@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@agentclientprotocol/sdk": "0.25.1",
-    "@deepseek-ai/dsh": "0.1.0-rc.6"
+    "@deepseek-ai/dsh": "0.1.0-rc.6",
+    "acpx": "0.11.2"
   }
 }
