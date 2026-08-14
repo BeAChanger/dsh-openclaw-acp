@@ -24,9 +24,11 @@
 
 ```bash
 npm install -g @deepseek-ai/dsh@0.1.0-rc.6
-dsh plugin --profile openclaw add github:BeAChanger/dsh-openclaw-acp#v0.1.2
+dsh plugin --profile openclaw add https://github.com/BeAChanger/dsh-openclaw-acp/releases/download/v0.1.2/dsh-openclaw-acp-0.1.2.tgz
 dsh --profile openclaw --dump-config
 ```
+
+该命令使用预构建的 release 产物（SHA-256：`c27d863f65d3ce4518e25cc6ef3758b66d956ea51ab11678e4c67d42803d7240`），安装时不会执行仓库构建脚本。
 
 默认路由是 `deepseek-official/deepseek-v4-flash`，启用 thinking，推理强度为 `max`，上下文窗口为 1,000,000 token，输出上限为 384,000 token。如需覆盖模型，在 Gateway 环境中设置：
 
