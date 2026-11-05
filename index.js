@@ -6,7 +6,7 @@ export const inject = ['agents']
 
 export const Config = Schema.object({
   provider: Schema.string().default('deepseek-official'),
-  model: Schema.string().default('deepseek-v4-flash'),
+  model: Schema.string().default('deepseek-flash'),
 })
 
 /**

@@ -15,4 +15,4 @@
       name: dsh-openclaw-acp
       config:
         provider: !!js process.env.DSH_OPENCLAW_PROVIDER ?? 'deepseek-official'
-        model: !!js process.env.DSH_OPENCLAW_MODEL ?? 'deepseek-v4-flash'
+        model: !!js process.env.DSH_OPENCLAW_MODEL ?? 'deepseek-flash'
